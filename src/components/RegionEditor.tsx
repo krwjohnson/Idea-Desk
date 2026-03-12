@@ -3,12 +3,16 @@ import { X } from 'lucide-react';
 import { useBoardStore } from '../store/useBoardStore';
 
 export const RegionEditor: React.FC = () => {
-  const { ui, updateUI, canvas, getRegionById } = useBoardStore();
-  
+  const { updateUI, canvas, getRegionById, updateRegion } = useBoardStore();
+
   const region = canvas.selectedRegionId ? getRegionById(canvas.selectedRegionId) : null;
 
   const handleClose = () => {
     updateUI({ showRegionEditor: false });
+  };
+
+  const update = (changes: Parameters<typeof updateRegion>[1]) => {
+    if (region) updateRegion(region.id, changes);
   };
 
   return (
@@ -36,6 +40,7 @@ export const RegionEditor: React.FC = () => {
                   <input
                     type="text"
                     value={region.name}
+                    onChange={(e) => update({ name: e.target.value })}
                     className="console-input w-full"
                     placeholder="Region name..."
                   />
@@ -48,11 +53,13 @@ export const RegionEditor: React.FC = () => {
                     <input
                       type="color"
                       value={region.color}
+                      onChange={(e) => update({ color: e.target.value })}
                       className="w-12 h-8 rounded border border-gray-600"
                     />
                     <input
                       type="text"
                       value={region.color}
+                      onChange={(e) => update({ color: e.target.value })}
                       className="console-input flex-1"
                       placeholder="#00ff9c"
                     />
@@ -66,6 +73,7 @@ export const RegionEditor: React.FC = () => {
                     <input
                       type="number"
                       value={region.rect.x}
+                      onChange={(e) => update({ rect: { ...region.rect, x: Number(e.target.value) } })}
                       className="console-input w-full"
                     />
                   </div>
@@ -74,6 +82,7 @@ export const RegionEditor: React.FC = () => {
                     <input
                       type="number"
                       value={region.rect.y}
+                      onChange={(e) => update({ rect: { ...region.rect, y: Number(e.target.value) } })}
                       className="console-input w-full"
                     />
                   </div>
@@ -82,6 +91,7 @@ export const RegionEditor: React.FC = () => {
                     <input
                       type="number"
                       value={region.rect.w}
+                      onChange={(e) => update({ rect: { ...region.rect, w: Number(e.target.value) } })}
                       className="console-input w-full"
                     />
                   </div>
@@ -90,6 +100,7 @@ export const RegionEditor: React.FC = () => {
                     <input
                       type="number"
                       value={region.rect.h}
+                      onChange={(e) => update({ rect: { ...region.rect, h: Number(e.target.value) } })}
                       className="console-input w-full"
                     />
                   </div>
@@ -98,7 +109,11 @@ export const RegionEditor: React.FC = () => {
                 {/* Lock Toggle */}
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Lock Region</label>
-                  <div className={`console-toggle ${region.locked ? 'active' : ''}`} />
+                  <div
+                    className={`console-toggle ${region.locked ? 'active' : ''}`}
+                    onClick={() => update({ locked: !region.locked })}
+                    style={{ cursor: 'pointer' }}
+                  />
                 </div>
               </>
             ) : (
@@ -119,14 +134,6 @@ export const RegionEditor: React.FC = () => {
             >
               Close
             </button>
-            {region && (
-              <button
-                onClick={handleClose}
-                className="console-button active"
-              >
-                Save Changes
-              </button>
-            )}
           </div>
         </div>
       </div>

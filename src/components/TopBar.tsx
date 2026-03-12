@@ -1,27 +1,24 @@
 import React, { useState } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Grid3X3, 
-  Download, 
-  Upload, 
-  Settings,
-  Save,
-  RotateCcw
+import {
+  Plus,
+  Search,
+  Grid3X3,
+  Download,
+  Upload,
+  Save
 } from 'lucide-react';
 import { useBoardStore } from '../store/useBoardStore';
 import { parseSearchQuery } from '../utils/searchUtils';
 import { exportBoardAsJSON, exportBoardAsZip, importBoardFromJSON, importBoardFromZip } from '../utils/exportUtils';
 
 export const TopBar: React.FC = () => {
-  const { 
-    board, 
-    ui, 
-    updateBoard, 
-    addNote, 
-    addRegion, 
-    updateUI,
-    setSearchFilters 
+  const {
+    board,
+    ui,
+    updateBoard,
+    addNote,
+    addRegion,
+    setSearchFilters
   } = useBoardStore();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -222,13 +219,6 @@ export const TopBar: React.FC = () => {
             </label>
           </div>
 
-          {/* Settings */}
-          <button
-            onClick={() => updateUI({ showRegionEditor: !ui.showRegionEditor })}
-            className="console-button"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>

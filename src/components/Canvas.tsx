@@ -63,9 +63,9 @@ export const Canvas: React.FC = () => {
       const note = board.notes.find(n => n.id === noteId);
       
       if (note && delta) {
-        // Calculate new position based on delta
-        const newX = note.x + delta.x;
-        const newY = note.y + delta.y;
+        const zoom = useBoardStore.getState().canvas.zoom;
+        const newX = note.x + delta.x / zoom;
+        const newY = note.y + delta.y / zoom;
         
         // Check if the note is dropped in a region
         const region = findRegionForPoint(newX, newY);
@@ -94,9 +94,10 @@ export const Canvas: React.FC = () => {
     // Only handle double-clicks on the canvas background
     if (event.target === canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      
+      const { canvas: { zoom } } = useBoardStore.getState();
+      const x = (event.clientX - rect.left) / zoom;
+      const y = (event.clientY - rect.top) / zoom;
+
       // Create a new note at the double-click position
       useBoardStore.getState().addNote({
         title: 'New Idea',
@@ -118,26 +119,22 @@ export const Canvas: React.FC = () => {
     >
       <div
         ref={canvasRef}
-        className={`relative w-full h-full ${board.settings.grid.enabled ? 'grid' : ''}`}
+        className="relative"
         style={{
-          backgroundSize: `${board.settings.grid.size}px ${board.settings.grid.size}px`,
-          cursor: canvas.isPanning ? 'grabbing' : 'grab'
+          width: '10000px',
+          height: '8000px',
+          cursor: canvas.isPanning ? 'grabbing' : 'default'
         }}
         onClick={handleCanvasClick}
         onDoubleClick={handleCanvasDoubleClick}
       >
         {/* Regions layer (behind notes) */}
         <RegionLayer />
-        
+
         {/* Notes layer */}
         {filteredNotes.map(note => (
           <NoteCard key={note.id} note={note} />
         ))}
-        
-        {/* Debug: Show note count */}
-        <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm">
-          Notes: {board.notes.length} | Filtered: {filteredNotes.length}
-        </div>
         
         {/* Drag overlay */}
         <DragOverlay>

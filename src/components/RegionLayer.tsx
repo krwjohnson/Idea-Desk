@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { Settings } from 'lucide-react';
 import { useBoardStore } from '../store/useBoardStore';
 
 interface ResizeHandleProps {
@@ -75,7 +76,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({ position, onResize }) => {
 
   return (
     <div
-      className="absolute bg-accent border border-white rounded-sm opacity-80 hover:opacity-100"
+      className="resize-handle absolute bg-accent border border-white rounded-sm opacity-80 hover:opacity-100"
       style={{
         ...getPosition(),
         cursor: getCursor(),
@@ -87,12 +88,37 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({ position, onResize }) => {
 };
 
 export const RegionLayer: React.FC = () => {
-  const { board, canvas, setSelectedRegion, updateRegion } = useBoardStore();
+  const { board, canvas, setSelectedRegion, updateRegion, updateUI } = useBoardStore();
 
-  const handleRegionClick = (regionId: string, e: React.MouseEvent) => {
+  const handleRegionMouseDown = useCallback((regionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedRegion(regionId);
-  };
+
+    const region = board.regions.find(r => r.id === regionId);
+    if (!region || region.locked) return;
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startRect = { ...region.rect };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      updateRegion(regionId, {
+        rect: {
+          ...startRect,
+          x: startRect.x + (e.clientX - startX),
+          y: startRect.y + (e.clientY - startY),
+        },
+      });
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [board.regions, setSelectedRegion, updateRegion]);
 
   const handleResize = useCallback((regionId: string, deltaX: number, deltaY: number, position: string) => {
     const region = board.regions.find(r => r.id === regionId);
@@ -160,17 +186,30 @@ export const RegionLayer: React.FC = () => {
             pointerEvents: 'auto',
             cursor: 'pointer',
           }}
-          onClick={(e) => handleRegionClick(region.id, e)}
+          onMouseDown={(e) => handleRegionMouseDown(region.id, e)}
         >
           {/* Region label */}
-          <div 
-            className="absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded"
-            style={{
-              backgroundColor: region.color,
-              color: '#000000',
-            }}
+          <div
+            className="absolute top-2 left-2 flex items-center gap-1"
           >
-            {region.name}
+            <span
+              className="px-2 py-1 text-xs font-medium rounded"
+              style={{ backgroundColor: region.color, color: '#000000' }}
+            >
+              {region.name}
+            </span>
+            <button
+              className="p-1 rounded opacity-60 hover:opacity-100 transition-opacity"
+              style={{ backgroundColor: region.color, color: '#000000' }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedRegion(region.id);
+                updateUI({ showRegionEditor: true });
+              }}
+            >
+              <Settings className="w-3 h-3" />
+            </button>
           </div>
           
           {/* Lock indicator */}

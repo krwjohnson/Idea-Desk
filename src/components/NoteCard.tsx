@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Note } from '../types';
 import { useBoardStore } from '../store/useBoardStore';
-import { Play, Pause, Volume2 } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;
@@ -11,7 +11,8 @@ interface NoteCardProps {
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) => {
   const { setSelectedNote, updateUI } = useBoardStore();
-  
+  const didDragRef = useRef(false);
+
   const {
     attributes,
     listeners,
@@ -26,17 +27,24 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) 
     },
   });
 
+  useEffect(() => {
+    if (isDndDragging) {
+      didDragRef.current = true;
+    }
+  }, [isDndDragging]);
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Only open modal if not dragging
-    if (!isDndDragging) {
-      setSelectedNote(note.id);
-      updateUI({ showNoteModal: true });
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      return;
     }
+    setSelectedNote(note.id);
+    updateUI({ showNoteModal: true });
   };
 
   const primaryAudio = note.audio.find(a => a.id === note.primaryAudioId);
@@ -46,25 +54,17 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) 
       <div
         ref={setNodeRef}
         style={{
-          ...style,
-          position: 'absolute',
-          left: note.x,
-          top: note.y,
+          ...(isDragging ? {} : style),
+          ...(isDragging ? {} : { position: 'absolute', left: note.x, top: note.y }),
           width: note.width,
           zIndex: isDragging || isDndDragging ? 1000 : 1,
-          opacity: isDragging || isDndDragging ? 0.8 : 1,
+          opacity: isDndDragging && !isDragging ? 0 : 1,
         }}
-        className={`sticky-note ${note.color} p-3 select-none`}
+        className={`sticky-note ${note.color} p-3 select-none cursor-grab active:cursor-grabbing`}
         onClick={handleClick}
+        {...(isDragging ? {} : listeners)}
+        {...(isDragging ? {} : attributes)}
       >
-        {/* Drag handle */}
-        <div
-          className="absolute top-1 left-1 w-4 h-4 cursor-grab active:cursor-grabbing"
-          {...listeners}
-          {...attributes}
-        >
-          <div className="w-full h-full bg-gray-400 bg-opacity-30 rounded"></div>
-        </div>
       {/* Note header */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-semibold text-sm text-gray-800 truncate">

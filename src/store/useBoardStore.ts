@@ -24,7 +24,7 @@ interface BoardStore {
   
   // Actions
   updateBoard: (updates: Partial<Board>) => void;
-  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'audio'> & { audio?: Note['audio'] }) => void;
   updateNote: (id: NoteId, updates: Partial<Note>) => void;
   deleteNote: (id: NoteId) => void;
   duplicateNote: (id: NoteId) => void;

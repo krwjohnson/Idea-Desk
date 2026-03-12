@@ -19,6 +19,11 @@ export const useKeyboardShortcuts = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't fire shortcuts when typing in an input
+      const target = event.target as HTMLElement;
+      const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      if (isTyping && event.key !== 'Escape') return;
+
       // Prevent default for our shortcuts
       const isModifierPressed = event.metaKey || event.ctrlKey;
       
