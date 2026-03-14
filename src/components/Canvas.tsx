@@ -1,13 +1,13 @@
 import React, { useRef, useCallback, useMemo } from 'react';
-import { 
-  DndContext, 
-  DragEndEvent, 
-  DragOverlay, 
+import {
+  DndContext,
+  DragEndEvent,
+  DragMoveEvent,
   DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter
+  closestCenter,
 } from '@dnd-kit/core';
 import { useBoardStore } from '../store/useBoardStore';
 import { NoteCard } from './NoteCard';
@@ -16,15 +16,16 @@ import { filterNotes } from '../utils/searchUtils';
 
 export const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const { 
-    board, 
-    canvas, 
+  const dragStartRef = useRef<{ noteId: string; x: number; y: number } | null>(null);
+  const {
+    board,
+    canvas,
     searchFilters,
-    updateCanvas, 
-    updateNote, 
+    updateCanvas,
+    updateNote,
     findRegionForPoint,
     setSelectedNote,
-    setSelectedRegion 
+    setSelectedRegion
   } = useBoardStore();
 
   // Set up drag sensors
@@ -46,41 +47,49 @@ export const Canvas: React.FC = () => {
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
     updateCanvas({ isDragging: true });
-    
+
     if (active.data.current?.type === 'note') {
+      const note = board.notes.find(n => n.id === active.id);
+      if (note) {
+        dragStartRef.current = { noteId: note.id, x: note.x, y: note.y };
+      }
       setSelectedNote(active.id as string);
     } else if (active.data.current?.type === 'region') {
       setSelectedRegion(active.id as string);
     }
-  }, [updateCanvas, setSelectedNote, setSelectedRegion]);
+  }, [board.notes, updateCanvas, setSelectedNote, setSelectedRegion]);
+
+  const handleDragMove = useCallback((event: DragMoveEvent) => {
+    const { active, delta } = event;
+    if (active.data.current?.type === 'note' && dragStartRef.current) {
+      const zoom = useBoardStore.getState().canvas.zoom;
+      updateNote(dragStartRef.current.noteId, {
+        x: dragStartRef.current.x + delta.x / zoom,
+        y: dragStartRef.current.y + delta.y / zoom,
+      });
+    }
+  }, [updateNote]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, delta } = event;
     updateCanvas({ isDragging: false });
 
-    if (active.data.current?.type === 'note') {
-      const noteId = active.id as string;
-      const note = board.notes.find(n => n.id === noteId);
-      
-      if (note && delta) {
-        const zoom = useBoardStore.getState().canvas.zoom;
-        const newX = note.x + delta.x / zoom;
-        const newY = note.y + delta.y / zoom;
-        
-        // Check if the note is dropped in a region
-        const region = findRegionForPoint(newX, newY);
-        
-        updateNote(noteId, {
-          x: newX,
-          y: newY,
-          regionId: region?.id
-        });
-      }
+    if (active.data.current?.type === 'note' && dragStartRef.current) {
+      const zoom = useBoardStore.getState().canvas.zoom;
+      const newX = dragStartRef.current.x + delta.x / zoom;
+      const newY = dragStartRef.current.y + delta.y / zoom;
+      const region = findRegionForPoint(newX, newY);
+      updateNote(dragStartRef.current.noteId, {
+        x: newX,
+        y: newY,
+        regionId: region?.id,
+      });
+      dragStartRef.current = null;
     }
-    
+
     setSelectedNote(undefined);
     setSelectedRegion(undefined);
-  }, [board.notes, updateCanvas, updateNote, findRegionForPoint, setSelectedNote, setSelectedRegion]);
+  }, [updateCanvas, updateNote, findRegionForPoint, setSelectedNote, setSelectedRegion]);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent) => {
     // Only handle clicks on the canvas background, not on notes or regions
@@ -93,12 +102,13 @@ export const Canvas: React.FC = () => {
   const handleCanvasDoubleClick = useCallback((event: React.MouseEvent) => {
     // Only handle double-clicks on the canvas background
     if (event.target === canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const { canvas: { zoom } } = useBoardStore.getState();
-      const x = (event.clientX - rect.left) / zoom;
-      const y = (event.clientY - rect.top) / zoom;
+      const { zoom, panX, panY } = useBoardStore.getState().canvas;
+      // Use the outer wrapper (not the transformed canvas) for a stable bounding rect
+      const wrapper = canvasRef.current.parentElement?.parentElement;
+      const containerRect = wrapper?.getBoundingClientRect() ?? { left: 0, top: 0 };
+      const x = (event.clientX - containerRect.left - panX) / zoom;
+      const y = (event.clientY - containerRect.top - panY) / zoom;
 
-      // Create a new note at the double-click position
       useBoardStore.getState().addNote({
         title: 'New Idea',
         x,
@@ -115,6 +125,7 @@ export const Canvas: React.FC = () => {
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
     >
       <div
@@ -136,15 +147,6 @@ export const Canvas: React.FC = () => {
           <NoteCard key={note.id} note={note} />
         ))}
         
-        {/* Drag overlay */}
-        <DragOverlay>
-          {canvas.selectedNoteId ? (
-            <NoteCard 
-              note={filteredNotes.find(n => n.id === canvas.selectedNoteId)!} 
-              isDragging 
-            />
-          ) : null}
-        </DragOverlay>
       </div>
     </DndContext>
   );

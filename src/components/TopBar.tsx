@@ -14,6 +14,7 @@ import { exportBoardAsJSON, exportBoardAsZip, importBoardFromJSON, importBoardFr
 export const TopBar: React.FC = () => {
   const {
     board,
+    canvas,
     ui,
     updateBoard,
     addNote,
@@ -23,24 +24,35 @@ export const TopBar: React.FC = () => {
   
   const [searchQuery, setSearchQuery] = useState('');
 
+  const getViewportCenter = () => {
+    const { zoom, panX, panY } = canvas;
+    const topbarHeight = 72;
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight - topbarHeight;
+    return {
+      x: (-panX + viewportW / 2) / zoom,
+      y: (-panY + viewportH / 2) / zoom,
+    };
+  };
+
   const handleAddNote = () => {
-    console.log('Adding new note...');
+    const { x, y } = getViewportCenter();
     addNote({
       title: 'New Idea',
-      x: 100,
-      y: 100,
+      x: x - 100,
+      y: y - 60,
       width: 200,
       color: 'yellow',
       mood: []
     });
-    console.log('Note added, current notes:', board.notes.length);
   };
 
   const handleAddRegion = () => {
+    const { x, y } = getViewportCenter();
     addRegion({
       name: 'New Region',
       color: '#00ff9c',
-      rect: { x: 200, y: 200, w: 300, h: 200 },
+      rect: { x: x - 150, y: y - 100, w: 300, h: 200 },
       zIndex: 0
     });
   };

@@ -6,10 +6,9 @@ import { Volume2 } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;
-  isDragging?: boolean;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
   const { setSelectedNote, updateUI } = useBoardStore();
   const didDragRef = useRef(false);
 
@@ -17,7 +16,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) 
     attributes,
     listeners,
     setNodeRef,
-    transform,
     isDragging: isDndDragging,
   } = useDraggable({
     id: note.id,
@@ -32,10 +30,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) 
       didDragRef.current = true;
     }
   }, [isDndDragging]);
-
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,16 +48,16 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, isDragging = false }) 
       <div
         ref={setNodeRef}
         style={{
-          ...(isDragging ? {} : style),
-          ...(isDragging ? {} : { position: 'absolute', left: note.x, top: note.y }),
+          position: 'absolute',
+          left: note.x,
+          top: note.y,
           width: note.width,
-          zIndex: isDragging || isDndDragging ? 1000 : 1,
-          opacity: isDndDragging && !isDragging ? 0 : 1,
+          zIndex: isDndDragging ? 1000 : 1,
         }}
         className={`sticky-note ${note.color} p-3 select-none cursor-grab active:cursor-grabbing`}
         onClick={handleClick}
-        {...(isDragging ? {} : listeners)}
-        {...(isDragging ? {} : attributes)}
+        {...listeners}
+        {...attributes}
       >
       {/* Note header */}
       <div className="flex items-center justify-between mb-2">

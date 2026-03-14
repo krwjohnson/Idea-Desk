@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Trash2 } from 'lucide-react';
 import { useBoardStore } from '../store/useBoardStore';
 
 interface ResizeHandleProps {
@@ -88,7 +88,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({ position, onResize }) => {
 };
 
 export const RegionLayer: React.FC = () => {
-  const { board, canvas, setSelectedRegion, updateRegion, updateUI } = useBoardStore();
+  const { board, canvas, setSelectedRegion, updateRegion, deleteRegion, updateUI } = useBoardStore();
 
   const handleRegionMouseDown = useCallback((regionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -209,6 +209,17 @@ export const RegionLayer: React.FC = () => {
               }}
             >
               <Settings className="w-3 h-3" />
+            </button>
+            <button
+              className="p-1 rounded opacity-60 hover:opacity-100 transition-opacity"
+              style={{ backgroundColor: region.color, color: '#000000' }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteRegion(region.id);
+              }}
+            >
+              <Trash2 className="w-3 h-3" />
             </button>
           </div>
           

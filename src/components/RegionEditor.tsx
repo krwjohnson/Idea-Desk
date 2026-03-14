@@ -1,9 +1,9 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { useBoardStore } from '../store/useBoardStore';
 
 export const RegionEditor: React.FC = () => {
-  const { updateUI, canvas, getRegionById, updateRegion } = useBoardStore();
+  const { updateUI, canvas, getRegionById, updateRegion, deleteRegion } = useBoardStore();
 
   const region = canvas.selectedRegionId ? getRegionById(canvas.selectedRegionId) : null;
 
@@ -127,7 +127,19 @@ export const RegionEditor: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-700">
+          <div className="flex justify-between mt-8 pt-6 border-t border-gray-700">
+            {region ? (
+              <button
+                onClick={() => {
+                  deleteRegion(region.id);
+                  handleClose();
+                }}
+                className="console-button flex items-center space-x-2 text-red-400 hover:text-red-300"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Region</span>
+              </button>
+            ) : <div />}
             <button
               onClick={handleClose}
               className="console-button"

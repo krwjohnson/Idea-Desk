@@ -71,23 +71,31 @@ export const useKeyboardShortcuts = () => {
       // New note (N)
       if (event.key === 'n' && !isModifierPressed) {
         event.preventDefault();
+        const { zoom, panX, panY } = canvas;
+        const topbarHeight = 72;
+        const cx = (-panX + window.innerWidth / 2) / zoom;
+        const cy = (-panY + (window.innerHeight - topbarHeight) / 2) / zoom;
         addNote({
           title: 'New Idea',
-          x: 100,
-          y: 100,
+          x: cx - 100,
+          y: cy - 60,
           width: 200,
           color: 'yellow',
           mood: []
         });
       }
-      
+
       // New region (R)
       if (event.key === 'r' && !isModifierPressed) {
         event.preventDefault();
+        const { zoom, panX, panY } = canvas;
+        const topbarHeight = 72;
+        const cx = (-panX + window.innerWidth / 2) / zoom;
+        const cy = (-panY + (window.innerHeight - topbarHeight) / 2) / zoom;
         addRegion({
           name: 'New Region',
           color: '#00ff9c',
-          rect: { x: 200, y: 200, w: 300, h: 200 },
+          rect: { x: cx - 150, y: cy - 100, w: 300, h: 200 },
           zIndex: 0
         });
       }
