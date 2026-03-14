@@ -49,7 +49,8 @@ export const useKeyboardShortcuts = () => {
       }
       
       // Delete selected note(s)
-      if (event.key === 'Delete') {
+      // 'Backspace' = Mac Delete key; 'Delete' = forward-delete on full keyboards
+      if (event.key === 'Delete' || event.key === 'Backspace') {
         if (canvas.selectedNoteIds.length > 0) {
           event.preventDefault();
           deleteNotes(canvas.selectedNoteIds);

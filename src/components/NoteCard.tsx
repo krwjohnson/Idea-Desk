@@ -65,6 +65,13 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
         onClick={handleClick}
         {...listeners}
         {...attributes}
+        onPointerDown={(e) => {
+          // Stop propagation so react-zoom-pan-pinch doesn't start panning
+          // when the user intends to drag a note. dnd-kit's listener is already
+          // spread above and will handle the drag activation.
+          e.stopPropagation();
+          listeners?.onPointerDown?.(e);
+        }}
       >
       {/* Note header */}
       <div className="flex items-center justify-between mb-2">
