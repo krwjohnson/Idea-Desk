@@ -114,13 +114,16 @@ export const Canvas: React.FC = () => {
     }
   }, [setSelectedNote, setSelectedRegion, setSelectedNotes]);
 
-  // Shift+drag on empty canvas starts a rubber-band selection box.
-  // stopPropagation on pointerdown prevents react-zoom-pan-pinch from panning.
+  // Shift+drag on empty canvas draws a rubber-band selection box.
+  // Uses pointer events (not mouse events) and setPointerCapture so tracking
+  // continues reliably even when the pointer leaves the canvas element.
   const handleCanvasPointerDown = useCallback((event: React.PointerEvent) => {
     if (event.target !== canvasRef.current) return;
     if (!event.shiftKey) return;
 
     event.stopPropagation();
+    event.preventDefault();
+    canvasRef.current.setPointerCapture(event.pointerId);
 
     const { zoom, panX, panY } = useBoardStore.getState().canvas;
     const wrapper = canvasRef.current!.parentElement?.parentElement;
@@ -131,7 +134,7 @@ export const Canvas: React.FC = () => {
     let box = { x1: startX, y1: startY, x2: startX, y2: startY };
     setSelectionBox({ ...box });
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       const { zoom: z, panX: px, panY: py } = useBoardStore.getState().canvas;
       const endX = (e.clientX - containerRect.left - px) / z;
       const endY = (e.clientY - containerRect.top - py) / z;
@@ -139,7 +142,7 @@ export const Canvas: React.FC = () => {
       setSelectionBox({ ...box });
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       const minX = Math.min(box.x1, box.x2);
       const maxX = Math.max(box.x1, box.x2);
       const minY = Math.min(box.y1, box.y2);
@@ -158,12 +161,12 @@ export const Canvas: React.FC = () => {
       }
 
       setSelectionBox(null);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
   }, []);
 
   const handleCanvasDoubleClick = useCallback((event: React.MouseEvent) => {

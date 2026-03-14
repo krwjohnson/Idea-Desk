@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { version } from '../../package.json';
 import {
   Plus,
   Search,
@@ -133,7 +134,10 @@ export const TopBar: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Left section */}
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-accent">IDEA DESK</h1>
+          <div>
+            <h1 className="text-xl font-bold text-accent">IDEA DESK</h1>
+            <p className="text-xs text-gray-500">v{version}</p>
+          </div>
           
           <div className="flex items-center space-x-2">
             <button
