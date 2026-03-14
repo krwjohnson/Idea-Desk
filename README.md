@@ -63,7 +63,7 @@ npm run build
 
 - Click the **+ Region** button in the top bar
 - Drag the region to move it; drag the edge handles to resize
-- Click the **⚙** icon on the region label to rename it, change its color, or lock it
+- Click the **⚙** icon on the region label to rename it, change its color, or lock it; click the **🗑** icon to delete it immediately, or use the Delete Region button inside the editor
 - Notes dropped inside a region are automatically associated with it
 
 ### Recording Audio
@@ -84,7 +84,7 @@ npm run build
 |-----|--------|
 | Drag empty canvas | Pan the desk |
 | Scroll wheel | Zoom in / out |
-| `N` | New note at (100, 100) |
+| `N` | New note at viewport center |
 | `R` | New region |
 | `G` | Toggle grid |
 | `S` | Toggle grid snap |
@@ -185,7 +185,7 @@ The following bugs were identified and fixed during a focused debugging session:
 
 - ✅ Infinite canvas with zoom/pan
 - ✅ Draggable sticky notes
-- ✅ Region creation, dragging, resizing, and renaming
+- ✅ Region creation, dragging, resizing, renaming, and deletion
 - ✅ Note metadata editing (BPM, tuning, mood, chord, text)
 - ✅ Search and filtering
 - ✅ Export/import (JSON and ZIP)
@@ -195,8 +195,6 @@ The following bugs were identified and fixed during a focused debugging session:
 
 ### Future Features
 
-- Audio recording and playback
-- Waveform visualization
 - Multi-select and bulk operations
 - Freehand region drawing
 - Real-time collaboration

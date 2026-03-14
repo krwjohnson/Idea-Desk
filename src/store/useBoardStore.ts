@@ -32,12 +32,15 @@ interface BoardStore {
   addRegion: (region: Omit<Region, 'id'>) => void;
   updateRegion: (id: RegionId, updates: Partial<Region>) => void;
   deleteRegion: (id: RegionId) => void;
-  
+
   // Canvas actions
   updateCanvas: (updates: Partial<CanvasState>) => void;
   setSelectedNote: (id?: NoteId) => void;
   setSelectedRegion: (id?: RegionId) => void;
-  
+  setSelectedNotes: (ids: NoteId[]) => void;
+  toggleNoteInSelection: (id: NoteId) => void;
+  deleteNotes: (ids: NoteId[]) => void;
+
   // UI actions
   updateUI: (updates: Partial<UIState>) => void;
   setSearchFilters: (filters: SearchFilters) => void;
@@ -70,6 +73,7 @@ const defaultCanvas: CanvasState = {
   zoom: 1,
   panX: 0,
   panY: 0,
+  selectedNoteIds: [],
   isPanning: false,
   isDragging: false
 };
@@ -142,7 +146,23 @@ export const useBoardStore = create<BoardStore>()(
         ...state.board,
         notes: state.board.notes.filter(note => note.id !== id),
         updatedAt: new Date().toISOString()
-      }
+      },
+      canvas: {
+        ...state.canvas,
+        selectedNoteIds: state.canvas.selectedNoteIds.filter(sid => sid !== id),
+      },
+    })),
+
+    deleteNotes: (ids) => set((state) => ({
+      board: {
+        ...state.board,
+        notes: state.board.notes.filter(note => !ids.includes(note.id)),
+        updatedAt: new Date().toISOString()
+      },
+      canvas: {
+        ...state.canvas,
+        selectedNoteIds: [],
+      },
     })),
     
     duplicateNote: (id) => {
@@ -218,7 +238,24 @@ export const useBoardStore = create<BoardStore>()(
     setSelectedRegion: (id) => set((state) => ({
       canvas: { ...state.canvas, selectedRegionId: id, selectedNoteId: undefined }
     })),
-    
+
+    setSelectedNotes: (ids) => set((state) => ({
+      canvas: { ...state.canvas, selectedNoteIds: ids }
+    })),
+
+    toggleNoteInSelection: (id) => set((state) => {
+      const { selectedNoteIds } = state.canvas;
+      const isSelected = selectedNoteIds.includes(id);
+      return {
+        canvas: {
+          ...state.canvas,
+          selectedNoteIds: isSelected
+            ? selectedNoteIds.filter(sid => sid !== id)
+            : [...selectedNoteIds, id],
+        },
+      };
+    }),
+
     updateUI: (updates) => set((state) => ({
       ui: { ...state.ui, ...updates }
     })),

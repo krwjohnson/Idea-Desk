@@ -9,7 +9,8 @@ interface NoteCardProps {
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
-  const { setSelectedNote, updateUI } = useBoardStore();
+  const { setSelectedNote, updateUI, toggleNoteInSelection } = useBoardStore();
+  const isMultiSelected = useBoardStore(state => state.canvas.selectedNoteIds.includes(note.id));
   const didDragRef = useRef(false);
 
   const {
@@ -37,6 +38,10 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
       didDragRef.current = false;
       return;
     }
+    if (e.shiftKey) {
+      toggleNoteInSelection(note.id);
+      return;
+    }
     setSelectedNote(note.id);
     updateUI({ showNoteModal: true });
   };
@@ -53,6 +58,8 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note }) => {
           top: note.y,
           width: note.width,
           zIndex: isDndDragging ? 1000 : 1,
+          outline: isMultiSelected ? '2px solid #00ff9c' : undefined,
+          boxShadow: isMultiSelected ? '0 0 10px rgba(0,255,156,0.35)' : undefined,
         }}
         className={`sticky-note ${note.color} p-3 select-none cursor-grab active:cursor-grabbing`}
         onClick={handleClick}

@@ -77,6 +77,7 @@ export interface CanvasState {
   panY: number;
   selectedNoteId?: NoteId;
   selectedRegionId?: RegionId;
+  selectedNoteIds: NoteId[];
   isPanning: boolean;
   isDragging: boolean;
 }

@@ -2,18 +2,20 @@ import { useEffect } from 'react';
 import { useBoardStore } from '../store/useBoardStore';
 
 export const useKeyboardShortcuts = () => {
-  const { 
-    ui, 
-    canvas, 
+  const {
+    ui,
+    canvas,
     board,
-    updateUI, 
-    updateCanvas, 
+    updateUI,
+    updateCanvas,
     addNote,
     addRegion,
-    duplicateNote, 
+    duplicateNote,
     deleteNote,
+    deleteNotes,
     setSelectedNote,
     setSelectedRegion,
+    setSelectedNotes,
     updateBoard
   } = useBoardStore();
 
@@ -46,21 +48,27 @@ export const useKeyboardShortcuts = () => {
         duplicateNote(canvas.selectedNoteId);
       }
       
-      // Delete selected note
-      if (event.key === 'Delete' && canvas.selectedNoteId) {
-        event.preventDefault();
-        deleteNote(canvas.selectedNoteId);
-        setSelectedNote(undefined);
+      // Delete selected note(s)
+      if (event.key === 'Delete') {
+        if (canvas.selectedNoteIds.length > 0) {
+          event.preventDefault();
+          deleteNotes(canvas.selectedNoteIds);
+        } else if (canvas.selectedNoteId) {
+          event.preventDefault();
+          deleteNote(canvas.selectedNoteId);
+          setSelectedNote(undefined);
+        }
       }
-      
-      // Escape to close modals
+
+      // Escape to close modals and clear multi-select
       if (event.key === 'Escape') {
-        updateUI({ 
-          showNoteModal: false, 
+        updateUI({
+          showNoteModal: false,
           showRegionEditor: false,
-          showSearch: false 
+          showSearch: false
         });
         setSelectedNote(undefined);
+        setSelectedNotes([]);
       }
       
       // Minimap toggle (M)
@@ -170,5 +178,5 @@ export const useKeyboardShortcuts = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [ui, canvas, board, updateUI, updateCanvas, addNote, addRegion, duplicateNote, deleteNote, setSelectedNote, setSelectedRegion, updateBoard]);
+  }, [ui, canvas, board, updateUI, updateCanvas, addNote, addRegion, duplicateNote, deleteNote, deleteNotes, setSelectedNote, setSelectedRegion, setSelectedNotes, updateBoard]);
 };
