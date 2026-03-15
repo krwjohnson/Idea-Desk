@@ -83,6 +83,7 @@ const defaultUI: UIState = {
   showRegionEditor: false,
   showSearch: false,
   showMinimap: true,
+  showWelcomeModal: false,
   isSpacePressed: false
 };
 

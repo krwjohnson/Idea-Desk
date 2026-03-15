@@ -1,17 +1,27 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { useBoardStore } from './store/useBoardStore';
 import { TopBar } from './components/TopBar';
 import { Canvas } from './components/Canvas';
 import { NoteModal } from './components/NoteModal';
 import { RegionEditor } from './components/RegionEditor';
+import { WelcomeModal } from './components/WelcomeModal';
 import { Minimap } from './components/Minimap';
 import { GridBackdrop } from './components/GridBackdrop';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { usePersistence } from './hooks/usePersistence';
 
+const DISMISSED_KEY = 'idea-desk-welcome-dismissed';
+
 function App() {
-  const { ui, updateCanvas } = useBoardStore();
+  const { ui, updateCanvas, updateUI } = useBoardStore();
+
+  // Show welcome modal on first visit (unless previously dismissed)
+  useEffect(() => {
+    if (!localStorage.getItem(DISMISSED_KEY)) {
+      updateUI({ showWelcomeModal: true });
+    }
+  }, [updateUI]);
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
   // Initialize keyboard shortcuts
@@ -62,6 +72,7 @@ function App() {
 
       {ui.showNoteModal && <NoteModal />}
       {ui.showRegionEditor && <RegionEditor />}
+      {ui.showWelcomeModal && <WelcomeModal />}
     </div>
   );
 }

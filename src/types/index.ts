@@ -96,6 +96,7 @@ export interface UIState {
   showRegionEditor: boolean;
   showSearch: boolean;
   showMinimap: boolean;
+  showWelcomeModal: boolean;
   isSpacePressed: boolean;
   lastSaved?: string;
 }
