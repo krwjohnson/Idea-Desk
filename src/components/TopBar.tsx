@@ -18,6 +18,7 @@ export const TopBar: React.FC = () => {
     canvas,
     ui,
     updateBoard,
+    updateUI,
     addNote,
     addRegion,
     setSearchFilters
@@ -134,10 +135,15 @@ export const TopBar: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Left section */}
         <div className="flex items-center space-x-4">
-          <div>
-            <h1 className="text-xl font-bold text-accent">IDEA DESK</h1>
+          <button
+            onClick={() => updateUI({ showWelcomeModal: true })}
+            className="text-left group"
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            title="About Idea Desk"
+          >
+            <h1 className="text-xl font-bold text-accent group-hover:opacity-80 transition-opacity">IDEA DESK</h1>
             <p className="text-xs text-gray-500">v{version}</p>
-          </div>
+          </button>
           
           <div className="flex items-center space-x-2">
             <button
